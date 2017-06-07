@@ -1,0 +1,288 @@
+// Initialize the experiment
+
+v_init = -70
+
+numi = 5 // loop over excitatory conductances
+ge_0 = 0.001
+ge_inc = 0.001
+tau_e = 0.5
+start_e = 2
+
+forall {insert cldifus}
+forall {Ra = 100}
+
+dendr_pre = new Vector(0)
+dendr_post = new Vector(0)
+dendr_side = new Vector(0)
+sl = new Vector(0)
+sl_orig = new Vector(0)
+sl.append(0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2)
+sl_orig = sl.c
+
+dendr_post.append(119,120)
+
+// *******************************************************
+// maximum segment length 5um and nseg = odd multiple of 5
+// *******************************************************
+
+apical_dendrite[dendr] {nseg=int((int(L/5)+5)/10)*10+5}
+for i=0,dendr_pre.size()-1 {
+	apical_dendrite[dendr_pre.x[i]] {nseg=int((int(L/5)+5)/10)*10+5}
+}
+for i=0,dendr_post.size()-1 {
+	apical_dendrite[dendr_post.x[i]] {nseg=int((int(L/5)+5)/10)*10+5}
+}
+for i=0,dendr_side.size()-1 {
+	apical_dendrite[dendr_side.x[i]] {nseg=int((int(L/5)+5)/10)*10+5}
+}
+
+// *******************************************************
+
+objref dendrv, posv, dendrv_side, posv_side, identv
+dendrv = new Vector(0)
+posv = new Vector(0)
+dendrv_side = new Vector(0)
+posv_side = new Vector(0)
+identv = new Vector(0)
+dendrv.append(dendr)
+posv.append(synpos)
+identv.append(0)
+
+// *******************************************************
+// The following lines define the recording sites at segmentation points along the dendrites which are closest to the distances defined by "sl".
+// *******************************************************
+
+access apical_dendrite[dendr]
+orig = distance(synpos)
+curr_seg = 0
+bc = 1
+
+for i=0,dendr_post.size()-1 {
+access apical_dendrite[dendr_post.x[i]]
+curr_dist = distance(0)
+curr_pos = 0
+bc = 1
+if (curr_seg<sl.size()) {
+	if (curr_pos+sl.x[curr_seg]/L>1) {
+		bc=0
+	}
+} else {
+	bc=0
+}
+while (bc>0) {
+curr_dist = distance(curr_pos+sl.x[curr_seg]/L)
+curr_pos = (curr_dist-distance(0))/L
+dendrv.append(dendr_post.x[i])
+posv.append(curr_pos)
+identv.append(1)
+dist_D = orig + sl_orig.sum(0,curr_seg) - curr_dist
+curr_seg = curr_seg+1
+
+if (curr_seg<sl.size()) {
+	sl.x[curr_seg] = sl.x[curr_seg]+dist_D	
+	if (curr_pos+sl.x[curr_seg]/L>1) {
+		bc=0
+	}
+} else {
+	bc=0
+}
+}
+if (curr_seg<sl.size()) {
+	sl.x[curr_seg] = sl.x[curr_seg]-(distance(1)-curr_dist)  
+}
+}
+ 
+for i=0,dendrv.size()-1 {
+print dendrv.x[i]
+print posv.x[i]
+
+}
+
+
+dendrv.append(dendrv_side)
+posv.append(posv_side)
+identv.append(ident_side)
+
+
+// *******************************************************
+// Run the experiment
+// *******************************************************
+
+nchan = dendrv.size()*2+2
+print nchan
+
+access soma
+
+objref stimulator1, stimulator2, stimulator3, datamat, paramat 
+objref vsoma
+objref vdendr[(nchan-2)/2]
+objref ca[(nchan-2)/2]
+objref casoma
+objref tvec
+objref distv
+
+datamat = new Matrix()
+paramat = new Matrix(5,numi*numj*numk+1)
+distv = new Vector()
+vsoma = new Vector()
+for i=0,(nchan-2)/2-1 {
+	vdendr[i] = new Vector()
+	ca[i] = new Vector()
+}
+casoma = new Vector()
+tvec = new Vector()
+
+objref syn1[numi], syn2[numi], syn3[numi]
+
+
+finitialize(v_init)
+fcurrent()
+run()
+
+soma{
+stimulator1 = new IClamp(0.5)
+stimulator1.del=stimstart
+stimulator1.dur=1
+stimulator1.amp=3
+//stimulator2 = new IClamp(0.5)
+//stimulator2.del=stimstart+5
+//stimulator2.dur=1
+//stimulator2.amp=3
+//stimulator3 = new IClamp(0.5)
+//stimulator3.del=stimstart+10
+//stimulator3.dur=1
+//stimulator3.amp=3
+}
+
+objref syne
+apical_dendrite[120] {
+	syne = new AlphaSynapse(1)
+	syne.onset = stimstart + start_e
+	syne.tau = tau_e
+	syne.e = 0
+}
+
+// loop over excitatory conductance
+for ic=0,numi-1 {
+
+	if (ic>0) {
+		ge = ge_0 + (ic-1)*ge_inc
+	} else {
+		ge = 0
+	}
+	
+	syne.gmax = ge
+
+	xvari = synpos
+	
+	// loop over conductance
+	for kc=0,numk-1 {
+
+	if (kc==0) {
+		gi = 0
+	} else {
+		gi = gi_0 + gi_inc*(kc-1)
+	}
+	
+	// loop over time
+	for jc=0,numj-1 {
+
+	count = ic*numk*numj+kc*numj+jc
+	
+	if (numj>1) {	
+		tstart = stimstart-timestart+jc*0.5
+	} else {
+		tstart = stimstart
+	}
+	
+	apical_dendrite[dendrv.x[0]] {
+	
+	syn1[0] = new gaba(xvari)
+	syn1[0].onset = tstart
+	syn1[0].tau = tau
+	//syn1[0].tau1 = tau1
+	//syn1[0].tau2 = tau2
+	//syn1[0].tau3 = tau3
+	syn1[0].gmax = gi
+	syn1[0].e = v_init
+	
+	//syn2[0] = new gaba(xvari)
+	//syn2[0].onset = tstart+5
+	//syn2[0].tau1 = tau1
+	//syn2[0].tau2 = tau2
+	//syn2[0].tau3 = tau3
+	//syn2[0].gmax = gi
+	//syn2[0].e = v_init
+		
+	//syn3[0] = new gaba(xvari)
+	//syn3[0].onset = tstart+10
+	//syn3[0].tau1 = tau1
+	//syn3[0].tau2 = tau2
+	//syn3[0].tau3 = tau3
+	//syn3[0].gmax = gi
+	//syn3[0].e = v_init
+
+	}
+
+	
+	distv.resize(nchan)	
+
+	access soma
+	vsoma.record(&soma[0].v(0.5))
+	casoma.record(&soma[0].cai(0.5))
+	distv.x[0]=distance(0.5)
+	
+	for i=0,(nchan-2)/2-1 {
+		vdendr[i].record(&apical_dendrite[dendrv.x[i]].v(posv.x[i]))
+		ca[i].record(&apical_dendrite[dendrv.x[i]].cai(posv.x[i]))
+		access apical_dendrite[dendrv.x[i]]
+		distv.x[i+1]=distance(posv.x[i])
+	}
+	
+	tvec.record(&t)
+	
+	finitialize(v_init)
+	fcurrent()
+	run()
+	
+	datamat.resize(vsoma.size()-(stimstart-timestart-1)/dt+1,nchan*numi*numj*numk+3)
+	
+	print (numk*numj*ic+numj*kc+jc+1)/(numi*numk*numj)
+
+	datamat.setcol(nchan*(count),vsoma.remove(0,(stimstart-timestart-1)/dt))
+	for i=0,(nchan-2)/2-1 {
+	datamat.setcol(nchan*(count)+i+1,vdendr[i].remove(0,(stimstart-timestart-1)/dt))
+	}
+	datamat.setcol(nchan*(count)+(nchan-2)/2+1,casoma.remove(0,(stimstart-timestart-1)/dt))
+	for i=0,(nchan-2)/2-1 {
+	datamat.setcol(nchan*(count)+(nchan-2)/2+1+i+1,ca[i].remove(0,(stimstart-timestart-1)/dt))
+	}	
+
+	paramat.x[0][(ic*numk*numj+kc*numj+jc)] = stimstart
+	access apical_dendrite[dendrv.x[0]]
+	paramat.x[1][(ic*numk*numj+kc*numj+jc)] = distance(xvari)
+	paramat.x[2][(ic*numk*numj+kc*numj+jc)] = tstart
+	paramat.x[3][(ic*numk*numj+kc*numj+jc)] = gi
+	paramat.x[4][(ic*numk*numj+kc*numj+jc)] = ge
+	
+	}
+	}
+
+}
+
+
+paramat.x[0][numi*numj*numk] = nchan
+paramat.x[1][numi*numj*numk] = numi
+paramat.x[2][numi*numj*numk] = numj
+paramat.x[3][numi*numj*numk] = numk
+
+
+datamat.setcol(nchan*numi*numj*numk,tvec.remove(0,(stimstart-timestart-1)/dt))
+datamat.setcol(nchan*numi*numj*numk+1,distv)
+datamat.setcol(nchan*numi*numj*numk+2,identv)
+
+datamat.fprint(0,savdata,"%g;")
+paramat.fprint(0,savparam,"%g;")
+
+savdata.close()
+savparam.close()

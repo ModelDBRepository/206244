@@ -1,0 +1,20 @@
+dendr=3
+synpos=0.1
+
+objref dendr_pre, dendr_post, dendr_side, ident_side
+objref sl,sl_orig
+dendr_pre = new Vector(0)
+dendr_post = new Vector(0)
+dendr_side = new Vector(0)
+ident_side = new Vector(0)
+sl = new Vector(0)
+sl_orig = new Vector(0)
+
+dendr_pre.append(1,0)
+//dendr_post.append
+dendr_side.append(2,4)
+sl.append(5,10,20,20,20,20,50,50)
+sl_orig = sl.c
+
+load_file("LoadModel.hoc")
+

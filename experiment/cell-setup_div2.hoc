@@ -718,8 +718,8 @@ proc cell_setup() {
 
    // Print a postcript file in the generic directory with the cell configuration
 
-   sprint($o1.tmp_str2, "%s/configure_sections.eps", $o1.generic_dir)
-   $o1.tmpo2.printfile($o1.tmp_str2)
+//   sprint($o1.tmp_str2, "%s/configure_sections.eps", $o1.generic_dir)
+//   $o1.tmpo2.printfile($o1.tmp_str2)
   
 // Comment FM: current-balance forces e_pas to arbitrarily low values, which produces paradoxical results e.g. if ih conductances are increased. Switched off for this simulation, resulting in a resting membrane potential of ~-68mV.
 //   $o1.xopen_library("Terrence","current-balance") // balance current to -70 mV

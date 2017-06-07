@@ -1,0 +1,51 @@
+load_file("LoadModel.hoc")
+
+objref savdata
+objref savparam
+savdata = new File()
+savparam = new File()
+savdata.wopen("simulationData_5.dat")
+savparam.wopen("simulationData_param_5.dat")
+
+
+// Analyze timing and distance dependence of Ca-inhibition
+
+numi = 1	// loop over location
+numj = 13	// loop over time differences, odd number
+numk = 8	// loop over conductances, at least 2
+
+dt = 0.025
+tstop = 20
+stimstart = 5
+timestart = 3
+tau = 1
+tau1 = 0.6
+tau2 = 1.7
+tau3 = 1
+
+// inhibitory synapse conductance in uS
+gi_0 = 0.001
+gi_inc = 0.004
+
+access soma[4]
+distance(0,1)
+
+dendr=112
+synpos=0.1
+objref dendr_pre, dendr_post, dendr_side, ident_side
+objref sl,sl_orig
+dendr_pre = new Vector(0)
+dendr_post = new Vector(0)
+dendr_side = new Vector(0)
+ident_side = new Vector(0)
+sl = new Vector(0)
+sl_orig = new Vector(0)
+
+dendr_pre.append(22,16,15,14,6,4,0)
+//dendr_post.append
+dendr_side.append(23,17)
+sl.append(5,10,20,20,20,20,50,50)
+sl_orig = sl.c
+
+load_file("ExpProcedure.hoc")
+

@@ -34,12 +34,12 @@ neckL = 0.667
 headW = 0.519
 headL = 0.519
 
-econ.xopen_geometry_dependent("cell_+spine_v1")    // load the raw cell morphology
+econ.xopen_geometry_dependent("cell_+spine")    // load the raw cell morphology
 econ.xopen_geometry_dependent("cell-analysis")     // load user-defined semantics on morphology 
 cell_analysis(econ)
 
 printf("Opening cell setup\n")
-econ.xopen_generic("cell-setup")                   // load the cell-setup file (define specific 
+econ.xopen_generic("cell-setup_regular")                   // load the cell-setup file (define specific 
 printf("Opened. Setting up cell\n")                // channels, membrane properties etc)
 cell_setup(econ)
 
