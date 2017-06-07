@@ -1,0 +1,4 @@
+//moddir mechanism
+load_file("nrngui.hoc")
+chdir("experiment")
+load_file("LoadModel.hoc")

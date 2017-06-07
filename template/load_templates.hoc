@@ -1,0 +1,3 @@
+load_file("ExperimentControl.hoc")   // load needed templates
+load_file("ObliquePath.hoc")
+load_file("BasalPath.hoc")
