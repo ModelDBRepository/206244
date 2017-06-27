@@ -42,7 +42,7 @@ The following modifications were implemented in the current model:
 (*) The cad-mechanism was modified to correct the surface-volume-ratio, which should vary with dendrite diameter (see Anwar et. al. 2014, "Dendritic diameters affect the spatial variability of intracellular calcium dynamics in computer models"); this has an effect on Ca2+-amplitudes, but not Ca2+-inhibition. 
 (*) The density of the LH-channels (calH) was modified to linearly increase along the first 50um apical dendritic tree (it had increased step-wise before).
 (*) The linear function increasing the Na+ spike attenuation variable ar2_hha_old with distance was modified to remove abrupt steps in current density.
-(*) The medium Ca2+-dependent K+-current density (mykca_init) was increased 3x, to prevent Ca2+-spikes in terminal branches, which have not been observed in the experiments.
+(*) To prevent the back-propagating APs from evoking secondary spikes in terminal branches, which was not consistent with our data, we increased axial resistance uniformly to Ra = 100 and the density of the Ca2+-dependent K+-current mykca_init by a factor of 3.
 (*) The function "current-balance.hoc" was switched off, which forces e_pas to arbitrarily negative potentials. E.g. when Ih density is increased, this results in a paradoxical hyperpolarizing net-effect of Ih. 
 (*) A finer segmentation was chosen (maximum segment length 5um).
 
@@ -170,10 +170,12 @@ want to autolaunch this model on mswin or install the alpha version
 ftp://www.neuron.yale.edu/neuron/versions/alpha/nrn5.7.10setup.exe
 available from neuron web site.)
 If you have an earlier 5.x version of neuron on mswin you can use these files by 
-by cd'ing to the mechanisms directory and compiling the mod files there and then starting up 
+cd'ing to the mechanisms directory and compiling the mod files there and then starting up 
 mosinit.hoc in the mechanisms directory (double clicking in mswin).
 20120112 Version: the euler methods in cad.mod and gabab.mod were updated to
 derivimplicit and cnexp as per
 http://www.neuron.yale.edu/phpbb/viewtopic.php?f=28&t=592
 20170607 An update from Fiona Muellner with added hoc and matlab code
 to reproduce all the figures in the paper.
+20170627 An update from Fiona Muellner clarified the sentence above
+that begins "To prevent the back-propagating APs..."
